@@ -1,10 +1,9 @@
 def get_fuel(mass):
-    result = 0
-    fuel = mass
-    while (fuel := fuel//3-2) > 0:
-        result += fuel
+    fuel = 0
+    while (mass := mass//3-2) > 0:
+        fuel += mass
 
-    return result
+    return fuel
 
 if __name__ == '__main__':
     with open('input.txt', 'r') as f:
