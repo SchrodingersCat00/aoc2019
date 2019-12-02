@@ -1,11 +1,31 @@
 def read_file_lines():
     with open('input.txt', 'r') as f:
-        lines = f.readlines()
+        l = f.readline().strip().split(',')
 
-    return lines
+    return [int(i) for i in l]
+
+
+def process_list(l, i):
+    if l[i] == 1:
+        l[l[i+3]] = l[l[i+1]] + l[l[i+2]]
+    elif l[i] == 2:
+        l[l[i+3]] = l[l[i+1]] * l[l[i+2]]
+
+
+def run_program(l):
+    i = 0
+    while i < len(l):
+        process_list(l, i)
+        i += 4
+
+    return l
+
 
 def main():
-    lines = read_file_lines()
+    l = read_file_lines()
+    run_program(l)
+    print(l)
+
 
 if __name__ == '__main__':
     main()
