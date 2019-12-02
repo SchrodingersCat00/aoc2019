@@ -1,3 +1,5 @@
+import copy
+
 def read_file_lines():
     with open('input.txt', 'r') as f:
         l = f.readline().strip().split(',')
@@ -23,9 +25,15 @@ def run_program(l):
 
 def main():
     l = read_file_lines()
-    run_program(l)
-    print(l)
-
+    acopy = copy.copy(l)
+    for i in range(173):
+        for j in range(173):
+            l = copy.copy(acopy)
+            l[1] = i
+            l[2] = j
+            run_program(l)
+            if l[0] == 19690720:
+                print(i, j)
 
 if __name__ == '__main__':
     main()
