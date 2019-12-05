@@ -10,6 +10,10 @@ class Operation(Enum):
     HALT = 3
     READ = 4
     WRITE = 5
+    TRUE = 6
+    FALSE = 7
+    LESS = 8
+    EQUAL = 9
 
 class Instruction:
     def __init__(self, op, modes):
@@ -33,19 +37,17 @@ def parse_opcode(opcode):
         '02': Operation.MULT,
         '03': Operation.READ,
         '04': Operation.WRITE,
-        '99': Operation.HALT
+        '05': Operation.TRUE,
+        '06': Operation.FALSE,
+        '07': Operation.LESS,
+        '08': Operation.EQUAL,
+        '99': Operation.HALT,
     }
     modes = [mode_conv[code] for code in opcode[:3]]
     modes.reverse()
     op = op_conv[''.join(opcode[3:])]
 
     return Instruction(op, modes)
-
-
-def increase_pc(opcode, pc):
-    inc = 2 if opcode in [Operation.READ, Operation.WRITE] else 4
-
-    return pc + inc
 
 
 def resolve_args(program, args, modes):
@@ -61,19 +63,47 @@ def resolve_args(program, args, modes):
 def get_args(program, op, pc):
     if op in [Operation.READ, Operation.WRITE]:
         return program[pc+1:pc+2]
+    elif op in [Operation.TRUE, Operation.FALSE]:
+        return program[pc+1:pc+3]
     else:
         return program[pc+1:pc+4]
 
 
-def run_command(program, operation, args):
+def run_command(program, operation, args, pc):
     if operation == Operation.ADD:
         program[args[2]] = args[0] + args[1]
+        return 4
     elif operation == Operation.MULT:
         program[args[2]] = args[0] * args[1]
+        return 4
     elif operation == Operation.READ:
         program[args[0]] = int(input())
+        return 2
     elif operation == Operation.WRITE:
         print(program[args[0]])
+        return 2
+    elif operation == Operation.TRUE:
+        if args[0] != 0:
+            return args[1] - pc
+        else:
+            return 3
+    elif operation == Operation.FALSE:
+        if args[0] == 0:
+            return args[1] - pc
+        else:
+            return 3
+    elif operation == Operation.LESS:
+        if args[0] < args[1]:
+            program[args[2]] = 1
+        else:
+            program[args[2]] = 0
+        return 4
+    elif operation == Operation.EQUAL:
+        if args[0] == args[1]:
+            program[args[2]] = 1
+        else:
+            program[args[2]] = 0
+        return 4
 
 
 
@@ -85,10 +115,10 @@ def run_program(program):
         parsed_code = parse_opcode(opcode)
         args = get_args(program, parsed_code.op, pc)
         resolved_args = resolve_args(program, args, parsed_code.modes)
-        resolved_args[-1] = args[-1]
-        run_command(program, parsed_code.op, resolved_args)
+        if parsed_code.op not in [Operation.TRUE, Operation.FALSE, Operation.LESS, Operation.EQUAL]:
+            resolved_args[-1] = args[-1]
 
-        pc = increase_pc(parsed_code.op, pc)
+        pc += run_command(program, parsed_code.op, resolved_args, pc)
 
 
 def main():
