@@ -17,7 +17,6 @@ class Operation(Enum):
 
 class Instruction:
     def __init__(self, op, modes):
-        super().__init__()
         self.op = op
         self.modes = modes
 
@@ -115,7 +114,7 @@ def run_program(program):
         parsed_code = parse_opcode(opcode)
         args = get_args(program, parsed_code.op, pc)
         resolved_args = resolve_args(program, args, parsed_code.modes)
-        if parsed_code.op not in [Operation.TRUE, Operation.FALSE, Operation.LESS, Operation.EQUAL]:
+        if parsed_code.op not in [Operation.TRUE, Operation.FALSE]:
             resolved_args[-1] = args[-1]
 
         pc += run_command(program, parsed_code.op, resolved_args, pc)
