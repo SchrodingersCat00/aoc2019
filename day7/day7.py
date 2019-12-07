@@ -16,7 +16,10 @@ def get_best1(base_program):
         amps = [(copy.copy(base_program), phase) for phase in phases]
         inputt = 0
         for program, phase in amps:
-            inputt, _ = computer.run_program(program, [phase, inputt])
+            program_obj = computer.Program(program)
+            program_obj.set_input([phase, inputt])
+            program_obj.run()
+            [inputt] = program_obj.OUT
 
         if inputt > best:
             best = inputt
