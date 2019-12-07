@@ -10,13 +10,13 @@ def read_file_lines():
     return lines
 
 
-def get_best(base_program):
+def get_best1(base_program):
     best = -math.inf
     for phases in itertools.permutations([i for i in range(5)]):
         amps = [(copy.copy(base_program), phase) for phase in phases]
         inputt = 0
         for program, phase in amps:
-            inputt = computer.run_program(program, inputt, phase)
+            inputt, _ = computer.run_program(program, [phase, inputt])
 
         if inputt > best:
             best = inputt
@@ -24,14 +24,22 @@ def get_best(base_program):
     return best
 
 
-def part1():
-    lines = read_file_lines()
-    program = [int(code) for code in lines[0].strip().split(',')]
-    print(get_best(program))
+def get_best2(base_program):
+    best = -math.inf
+    for phases in itertools.permutations([i for i in range(5, 10)]):
+        amps = [(copy.copy(base_program), [phase], []) for phase in phases]
+        inputt = 0
+        # While ampE did not halt
+            # get_next_amp
+            # run amp with current input
+            # when amp yields, retrieve generated output
+            # save amp pc and amp program state
 
 
 def main():
-    part1()
+    lines = read_file_lines()
+    program = [int(code) for code in lines[0].strip().split(',')]
+    get_best2(program)
 
 if __name__ == '__main__':
     main()

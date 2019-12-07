@@ -20,8 +20,8 @@ class Instruction:
         self.op = op
         self.modes = modes
 
-IN = None
-OUT = None
+IN = []
+OUT = []
 
 
 def read_file_lines():
@@ -112,9 +112,9 @@ def run_command(program, operation, args, pc):
         raise ValueError
 
 
-def run_program(program, inputt, phase):
+def run_program(program, inputt):
     global IN, OUT
-    IN = [phase, inputt]
+    IN = inputt
     opcode = None
     pc = 0
     while True:
@@ -129,7 +129,7 @@ def run_program(program, inputt, phase):
 
         pc += run_command(program, parsed_code.op, resolved_args, pc)
 
-    return OUT
+    return OUT, pc
 
 def main():
     lines = read_file_lines()
