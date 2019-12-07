@@ -17,7 +17,7 @@ def get_best1(base_program):
         inputt = 0
         for program, phase in amps:
             program_obj = computer.Program(program)
-            program_obj.set_input([phase, inputt])
+            program_obj.recv_input([phase, inputt])
             program_obj.run()
             [inputt] = program_obj.OUT
 
@@ -30,13 +30,27 @@ def get_best1(base_program):
 def get_best2(base_program):
     best = -math.inf
     for phases in itertools.permutations([i for i in range(5, 10)]):
-        amps = [(copy.copy(base_program), [phase], []) for phase in phases]
-        inputt = 0
+        amps = [computer.Program(copy.copy(base_program)).recv_input([phase]) for phase in phases]
+        cur_inp = [0]
+        amp_index = 0
+
         # While ampE did not halt
+        while not amps[-1].is_halted:
             # get_next_amp
+            cur_amp = amps[amp_index]
             # run amp with current input
+            cur_amp.recv_input(cur_inp)
+            cur_amp.run()
             # when amp yields, retrieve generated output
-            # save amp pc and amp program state
+            cur_inp = cur_amp.OUT
+            # update amp_index
+            amp_index += 1
+            amp_index %= 5
+
+        if cur_inp[0] > best:
+            best = cur_inp[0]
+
+    return best
 
 
 def main():

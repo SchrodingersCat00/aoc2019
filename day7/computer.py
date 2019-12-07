@@ -1,8 +1,10 @@
 from enum import Enum
 
+
 class Modes(Enum):
     POSITION = 1
     IMMEDIATE = 2
+
 
 class Operation(Enum):
     ADD = 1
@@ -14,6 +16,7 @@ class Operation(Enum):
     FALSE = 7
     LESS = 8
     EQUAL = 9
+
 
 class Instruction:
     def __init__(self, op, modes):
@@ -27,11 +30,12 @@ class Program:
         self.IN = []
         self.OUT = []
         self.state = state
+        self.is_halted = False
+        self.is_suspended = True
 
-
-    def set_input(self, inp):
-        self.IN = inp
-
+    def recv_input(self, inp):
+        self.IN = self.IN + inp
+        return self
 
     def parse_opcode(self, opcode):
         opcode = '{:05d}'.format(int(opcode))
@@ -53,17 +57,14 @@ class Program:
 
         return Instruction(op, modes)
 
-
     def resolve_arg(self, arg, mode):
             if mode == Modes.POSITION:
                 return self.state[arg]
 
             return arg
 
-
     def resolve_args(self, args, modes):
         return [self.resolve_arg(arg, mode) for arg, mode in zip(args, modes)]
-
 
     def get_args(self, op):
         if op in [Operation.READ, Operation.WRITE]:
@@ -81,8 +82,12 @@ class Program:
             self.state[args[2]] = args[0] * args[1]
             return 4
         elif operation == Operation.READ:
-            self.state[args[0]] = self.IN.pop(0)
-            return 2
+            if self.IN:
+                self.state[args[0]] = self.IN.pop(0)
+                return 2
+            else:
+                self.is_suspended = True
+                return 0
         elif operation == Operation.WRITE:
             self.OUT.append(self.state[args[0]])
             return 2
@@ -113,10 +118,11 @@ class Program:
         else:
             raise ValueError
 
-
     def run(self):
+        self.is_suspended = False
+        self.is_halted = False
         opcode = None
-        while True:
+        while not self.is_suspended:
             opcode = self.state[self.pc]
             parsed_code = self.parse_opcode(opcode)
             if parsed_code.op == Operation.HALT:
@@ -127,3 +133,5 @@ class Program:
                 resolved_args[-1] = args[-1]
 
             self.pc += self.run_command(parsed_code.op, resolved_args)
+
+        self.is_halted = True
