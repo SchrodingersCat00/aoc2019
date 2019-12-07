@@ -20,6 +20,9 @@ class Instruction:
         self.op = op
         self.modes = modes
 
+IN = None
+OUT = None
+
 
 def read_file_lines():
     with open('input.txt', 'r') as f:
@@ -67,8 +70,8 @@ def get_args(program, op, pc):
     else:
         return program[pc+1:pc+4]
 
-
 def run_command(program, operation, args, pc):
+    global IN, OUT
     if operation == Operation.ADD:
         program[args[2]] = args[0] + args[1]
         return 4
@@ -76,10 +79,10 @@ def run_command(program, operation, args, pc):
         program[args[2]] = args[0] * args[1]
         return 4
     elif operation == Operation.READ:
-        program[args[0]] = int(input())
+        program[args[0]] = IN.pop(0)
         return 2
     elif operation == Operation.WRITE:
-        print(program[args[0]])
+        OUT = program[args[0]]
         return 2
     elif operation == Operation.TRUE:
         if args[0] != 0:
@@ -105,15 +108,20 @@ def run_command(program, operation, args, pc):
         return 4
     elif operation == Operation.HALT:
         return 0
+    else:
+        raise ValueError
 
 
-
-def run_program(program):
+def run_program(program, inputt, phase):
+    global IN, OUT
+    IN = [phase, inputt]
     opcode = None
     pc = 0
-    while opcode != 99:
+    while True:
         opcode = program[pc]
         parsed_code = parse_opcode(opcode)
+        if parsed_code.op == Operation.HALT:
+            break
         args = get_args(program, parsed_code.op, pc)
         resolved_args = resolve_args(program, args, parsed_code.modes)
         if parsed_code.op not in [Operation.TRUE, Operation.FALSE]:
@@ -121,6 +129,7 @@ def run_program(program):
 
         pc += run_command(program, parsed_code.op, resolved_args, pc)
 
+    return OUT
 
 def main():
     lines = read_file_lines()
