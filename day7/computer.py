@@ -1,3 +1,4 @@
+import copy
 from enum import Enum
 
 
@@ -29,13 +30,18 @@ class Program:
         self.pc = 0
         self.IN = []
         self.OUT = []
-        self.state = state
+        self.state = copy.copy(state)
         self.is_halted = False
         self.is_suspended = True
 
     def recv_input(self, inp):
         self.IN = self.IN + inp
         return self
+
+    def send_output(self):
+        out = self.OUT
+        self.OUT = []
+        return out
 
     def parse_opcode(self, opcode):
         opcode = '{:05d}'.format(int(opcode))
@@ -126,6 +132,7 @@ class Program:
             opcode = self.state[self.pc]
             parsed_code = self.parse_opcode(opcode)
             if parsed_code.op == Operation.HALT:
+                self.is_halted = True
                 break
             args = self.get_args(parsed_code.op)
             resolved_args = self.resolve_args(args, parsed_code.modes)
@@ -133,5 +140,3 @@ class Program:
                 resolved_args[-1] = args[-1]
 
             self.pc += self.run_command(parsed_code.op, resolved_args)
-
-        self.is_halted = True

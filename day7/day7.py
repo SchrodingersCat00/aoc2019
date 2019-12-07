@@ -30,7 +30,7 @@ def get_best1(base_program):
 def get_best2(base_program):
     best = -math.inf
     for phases in itertools.permutations([i for i in range(5, 10)]):
-        amps = [computer.Program(copy.copy(base_program)).recv_input([phase]) for phase in phases]
+        amps = [computer.Program(base_program).recv_input([phase]) for phase in phases]
         cur_inp = [0]
         amp_index = 0
 
@@ -42,7 +42,7 @@ def get_best2(base_program):
             cur_amp.recv_input(cur_inp)
             cur_amp.run()
             # when amp yields, retrieve generated output
-            cur_inp = cur_amp.OUT
+            cur_inp = cur_amp.send_output()
             # update amp_index
             amp_index += 1
             amp_index %= 5
@@ -56,7 +56,7 @@ def get_best2(base_program):
 def main():
     lines = read_file_lines()
     program = [int(code) for code in lines[0].strip().split(',')]
-    get_best2(program)
+    print(get_best2(program))
 
 if __name__ == '__main__':
     main()
