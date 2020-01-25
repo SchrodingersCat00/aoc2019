@@ -44,13 +44,15 @@ def get_period(coords):
     for coord in coords[1:]:
         i += 1
         if coord == start:
-            break
-
-    return i
+            return i
+    
+    raise ValueError("No period was found")
 
 def generate_state(starting_state):
     moons = starting_state
+    yield moons
     while True:
+        moons = copy.deepcopy(moons)
         moons = update_velocity(moons)
         moons = update_positions(moons)
         yield moons
@@ -73,14 +75,19 @@ def part1(moons):
 def part2(moons):
     states = []
     gen = generate_state(moons)
-    for _ in range(1000):
+    for _ in range(999999):
         states.append(next(gen))
-    x_period = get_period([state.pos[0] for state in states])
-    y_period = get_period([state.pos[1] for state in states])
-    z_period = get_period([state.pos[2] for state in states])
-
-    print(x_period, y_period, z_period)
-
+    # state = [moonA, moonB, moonC, moonD]
+    periods = [
+        get_period(
+            [
+                tuple(moon.pos[i] for moon in state) + tuple(moon.vel[i] for moon in state) 
+                for state in states
+            ]
+        ) for i in range(3)
+    ]
+    for period in periods:
+        print(period)
 
 
 def compute_lcm(x, y):
@@ -94,12 +101,14 @@ def compute_lcm(x, y):
            lcm = greater
            break
        greater += 1
+
    return lcm
 
 
 def parse_moon(line):
     vel = [0, 0, 0]
     pos = list(int(part.split('=')[1]) for part in line.split(','))
+
     return Moon(pos, vel)
 
 
